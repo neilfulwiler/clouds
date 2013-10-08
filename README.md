@@ -1,3 +1,5 @@
+# CLOUDS #
+
 About
 =====
 
@@ -6,6 +8,11 @@ of a webpage. See the sample webpage (samples/home.html) for how
 to use. In words, just require clouds, and call clouds.main() for
 the background. There are various configuration options. See clouds.js
 for details.
+
+Screenshot
+==========
+
+_Clouds move in background_
 
 ![clouds background](/sample/home.png)
 
