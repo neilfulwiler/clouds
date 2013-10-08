@@ -7,7 +7,7 @@ to use. In words, just require clouds, and call clouds.main() for
 the background. There are various configuration options. See clouds.js
 for details.
 
-![clouds background](/sample/home.tiff)
+![clouds background](/sample/home.png)
 
 Dependencies
 ===========
