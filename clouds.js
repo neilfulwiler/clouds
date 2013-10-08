@@ -1,19 +1,42 @@
-define([
-  'underscore'
+define(
+  ['underscore'
+  ,'jquery'
 ],
-function(_) {
+function(_,$) {
 
-  var UPDATE_INTERVAL = 100
-    , BACKGROUND_COLOR = "rgba(17, 82, 248, 0.52)"
-    , NCLOUDS = 10
-    , CLOUD_RADIUS = 50
-    , CLOUD_WIDTH = 50
-    , CLOUD_SPEED_RANGE = [.5,2]
-    , PUFFS_PER_CLOUD = 10
-    ;
+  /* these are the defaults */
+  var defaults = {
+    update_interval : 100,
+    background_color : "rgba(17, 82, 248, 0.52)",
+    nclouds : 10,
+    cloud_radius : 50,
+    cloud_width : 50,
+    cloud_speed_range : [.5,2],
+    puffs_per_cloud : 10
+  };
+
+  var options = {};
 
   // exports objects
   var exports = {};
+
+  /**
+
+  Utils
+
+  currently only randint
+
+  **/
+
+  var Utils = {
+    randint : function(a,b) {
+      if(b===undefined) {
+        b=a;
+        a=0;
+      }
+      return a+Math.floor(Math.random()*(b-a));
+    }
+  };
 
   /**
 
@@ -80,9 +103,9 @@ function(_) {
   **/
 
   var puff_maker = function() {
-    var x = Utils.randint(this.pos.x - CLOUD_WIDTH, this.pos.x + CLOUD_WIDTH);
-    var y = Utils.randint(this.pos.y - CLOUD_WIDTH, this.pos.y + CLOUD_WIDTH);
-    return this.factory.newInstance(x,y,CLOUD_RADIUS);
+    var x = Utils.randint(this.pos.x - options.cloud_width, this.pos.x + options.cloud_width);
+    var y = Utils.randint(this.pos.y - options.cloud_width, this.pos.y + options.cloud_width);
+    return this.factory.newInstance(x,y,options.cloud_radius);
   };
 
   /**
@@ -98,15 +121,15 @@ function(_) {
   var Cloud = function(x,y,ctx) {
     this.pos = new Pos(x,y);
     this.factory = new CircleFactory(ctx);
-    this.puff_maker = fluff_maker.bind(this);
-    this.speed = randint.apply(this, CLOUD_SPEED_RANGE);
+    this.puff_maker = puff_maker.bind(this);
+    this.speed = Utils.randint.apply(Utils, options.cloud_speed_range);
     this.init_fluff();
   }
 
   _.extend(Cloud.prototype, {
     init_fluff: function() {
       var x,y;
-      var puffs = _.map(_.range(PUFFS_PER_CLOUD), this.puff_maker);
+      var puffs = _.map(_.range(options.puffs_per_cloud), this.puff_maker);
       this.puffs = puffs;
     },
 
@@ -189,41 +212,6 @@ function(_) {
   });
 
   /**
-
-  main
-
-  the main function that exposes functionality of the
-  clouds. Can either pass in a canvas element or by default
-  will grab the CSSCanvasContext to use
-
-  **/
-
-  exports.main = function(canvas) {
-    // using offscreen canvas
-    var w = screen.width, h = screen.height;
-
-    var ctx = canvas || document.getCSSCanvasContext("2d", "mybackground", w, h)
-      , factory = new CloudFactory(ctx)
-      , clouds = factory.make(NCLOUDS);
-
-    var draw_background = function() {
-      ctx.clearRect(0,0,w,h);
-      ctx.fillStyle = BACKGROUND_COLOR;
-      ctx.fillRect(0,0,w,h);
-    };
-
-    setInterval(function() {
-      draw_background();
-      _.each(clouds, function(cloud) {
-        cloud.update();
-        cloud.draw();
-      });
-    }, 100);
-
-   */
-  };
-
-  /**
   Pos
   - for position manipulation
   **/
@@ -282,6 +270,62 @@ function(_) {
   Pos.prototype.toString = function() {
     return "x: " + this.x + ", y: " + this.y;
   }
+
+  /**
+
+  main
+
+  the main function that exposes functionality of the
+  clouds. Can either pass in a canvas element or by default
+  will grab the CSSCanvasContext to use
+
+  **/
+
+  exports.main = function(_options) {
+    _options = _options || {};
+
+    // get the defaults if not provided in options
+    _.each(_.keys(defaults), function(option) {
+      options[option] = _options[option] || defaults[option]
+    });
+
+    // using offscreen canvas
+    var w = screen.width, h = screen.height;
+
+    var ctx;
+    if(_options.canvas===undefined) {
+
+      var background_name = "cloud_background";
+      ctx = document.getCSSCanvasContext("2d", background_name, w, h);
+
+      // set the body background to the canvas you just created
+      $('body').css('background', '-webkit-canvas('+background_name+')');
+    }
+
+    else {
+      ctx = _options.canvas.getContext("2d");
+    }
+
+    var factory = new CloudFactory(ctx)
+      , clouds = factory.make(options.nclouds)
+      ;
+
+    var draw_background = function() {
+      ctx.clearRect(0,0,w,h);
+      ctx.fillStyle = options.background_color;
+      ctx.fillRect(0,0,w,h);
+    };
+
+    setInterval(function() {
+      draw_background();
+      _.each(clouds, function(cloud) {
+        cloud.update();
+        cloud.draw();
+      });
+    }, options.update_interval);
+
+  };
+
 
   /**
   EXPORT
