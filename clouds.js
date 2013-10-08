@@ -290,10 +290,12 @@ function(_,$) {
     });
 
     // using offscreen canvas
-    var w = screen.width, h = screen.height;
-
-    var ctx;
+    var ctx,w,h;
     if(_options.canvas===undefined) {
+      // using full background so set width and height
+      // to screen dimensions
+      w = screen.width;
+      h = screen.height;
 
       var background_name = "cloud_background";
       ctx = document.getCSSCanvasContext("2d", background_name, w, h);
@@ -304,6 +306,8 @@ function(_,$) {
 
     else {
       ctx = _options.canvas.getContext("2d");
+      w = ctx.canvas.width;
+      h = ctx.canvas.height;
     }
 
     var factory = new CloudFactory(ctx)
