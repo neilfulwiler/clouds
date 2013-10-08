@@ -1,4 +1,5 @@
-clouds
-======
+About
+=====
 
-Display pretty clouds
+A small javascript library for adding clouds to the background
+of a webpage
